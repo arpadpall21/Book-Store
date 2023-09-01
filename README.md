@@ -3,6 +3,7 @@
         - this session cookie must be sent with every request (validation)
 
       - 2 stores (books & old books)
+      - for the sake of simplicity, no password check
 
 
 
