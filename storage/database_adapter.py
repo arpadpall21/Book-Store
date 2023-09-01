@@ -14,7 +14,7 @@ class DatabaseAdapter:
         del self.fake_database['users'][user]
         return True
 
-    def set_session_id(self, user: str, session_id: int) -> bool:
+    def set_session_id(self, user: str, session_id: str) -> bool:
         if user not in self.fake_database['users']:
             return False
         self.fake_database['users'][user]['session_id'] = session_id
