@@ -1,11 +1,10 @@
-from random import randint
-
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from server import database
-from utils.utils import generate_session_id
+from utils.utils import generate_session_id, hash_password
+from utils.decorators import check_user_credentials
 
 profile_router = APIRouter(prefix='/profile')
 
@@ -22,35 +21,38 @@ class ResponseBody(BaseModel):
 
 @profile_router.post('/register', responses={201: {'model': ResponseBody}, 409: {'model': ResponseBody}})
 def register_account(body: RequestBody):
-    if database.create_account(body.username, body.password):
-        return JSONResponse(status_code=201, content=ResponseBody(success=True, message='account created').dict())
-    return JSONResponse(status_code=409, content=ResponseBody(success=False, message='account already exist').dict())
+    user = database.get_user(body.username)
+    if user:
+        return JSONResponse(status_code=409,
+                            content=ResponseBody(success=False, message='user already exist').dict())
+    database.create_user(body.username, hash_password(body.password))
+    return JSONResponse(status_code=201, content=ResponseBody(success=True, message='user created').dict())
 
 
-@profile_router.post('/delete', responses={404: {'model': ResponseBody}})
+@profile_router.post('/delete', responses={404: {'model': ResponseBody}, 401: {'model': ResponseBody}})
+@check_user_credentials
 def delete_account(body: RequestBody):
-    if database.delete_account(body.username):
-        return ResponseBody(success=True, message='account deleted')
-    return JSONResponse(status_code=404, content=ResponseBody(success=False, message='account not found').dict())
+    database.delete_account(body.username)
+    return ResponseBody(success=True, message='account deleted')
 
 
-@profile_router.post('/login', responses={404: {'model': ResponseBody}})
+@profile_router.post('/login', responses={404: {'model': ResponseBody}, 401: {'model': ResponseBody}})
+@check_user_credentials
 def login(body: RequestBody):
-    account = database.get_account(body.username)
-    if account and account['password'] == body.password:
-        session_id = generate_session_id()
-        database.set_session_id(body.username, session_id)
+    user = database.get_user(body.username)
+    if user['session_id']:
+        return JSONResponse(status_code=401, content=ResponseBody(success=False, message='user already logged in').dict())
 
-        response = JSONResponse(status_code=200, content=ResponseBody(success=True, message='logged in').dict())
-        response.set_cookie(key='session_id', value=session_id)
-        return response
-    return JSONResponse(status_code=404, content=ResponseBody(success=False, message='account not found').dict())
+    session_id = generate_session_id()
+    database.set_session_id(body.username, session_id)
+
+    response = JSONResponse(status_code=200, content=ResponseBody(success=True, message='logged in').dict())
+    response.set_cookie(key='sessionId', value=session_id)
+    return response
 
 
-@profile_router.post('/logout', responses={404: {'model': ResponseBody}})
+@profile_router.post('/logout', responses={404: {'model': ResponseBody}, 401: {'model': ResponseBody}})
+@check_user_credentials
 def logout(body: RequestBody):
-    account = database.get_account(body.username)
-    if account and account['password'] == body.password:
-        database.clear_session_id(body.username)
-        return JSONResponse(status_code=200, content=ResponseBody(success=True, message='logged out').dict())
-    return JSONResponse(status_code=404, content=ResponseBody(success=False, message='account not found').dict())
+    database.clear_session_id(body.username)
+    return JSONResponse(status_code=200, content=ResponseBody(success=True, message='logged out').dict())
