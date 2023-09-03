@@ -24,14 +24,14 @@ def init_user_profile_activity_logger(app: FastAPI) -> None:
             response = await call_next(request)
             if response.status_code < 300:
                 with open('./logs/user_profile_activity.log', 'a') as file:
-                    file.write(_create_log_entry(body['username'], _get_activity(request.url)))
+                    file.write(_create_log_entry(body['email'], _get_activity(request.url)))
                 return response
 
         return await call_next(request)
 
 
-def _create_log_entry(username: str, activity: str) -> str:
-    return f'[{_get_current_time_for_log_entry()}] [user: {username}] [activity: {activity}]\n'
+def _create_log_entry(email: str, activity: str) -> str:
+    return f'[{_get_current_time_for_log_entry()}] [email: {email}] [activity: {activity}]\n'
 
 
 def _get_activity(url: str) -> str:

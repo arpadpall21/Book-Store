@@ -12,7 +12,7 @@ def check_user_credentials(fn):
         from server import database
 
         request = kwargs['body']
-        stored_user = database.get_user(request.username)
+        stored_user = database.get_user(request.email)
         if not stored_user:
             return JSONResponse(status_code=404, content=ResponseBody(success=False, message='user not found').dict())
         if stored_user['password'] != hash_password(request.password):

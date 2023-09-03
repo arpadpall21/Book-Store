@@ -18,36 +18,36 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         super().__init__()
         self.fake_database = {'users': {}, 'storage': {}, 'archive': {}}
 
-    def create_user(self, user: str, password: bytes) -> bool:
+    def create_user(self, email: str, password: bytes) -> bool:
         self._check_connection()
-        if user not in self.fake_database['users']:
-            self.fake_database['users'][user] = {'password': password, 'session_id': None}
+        if email not in self.fake_database['users']:
+            self.fake_database['users'][email] = {'password': password, 'session_id': None}
             return True
         return False
 
-    def delete_user(self, user: str) -> bool:
+    def delete_user(self, email: str) -> bool:
         self._check_connection()
-        if user in self.fake_database['users']:
-            del self.fake_database['users'][user]
+        if email in self.fake_database['users']:
+            del self.fake_database['users'][email]
             return True
         return False
 
-    def get_user(self, user: str) -> dict | None:
+    def get_user(self, email: str) -> dict | None:
         self._check_connection()
-        if user in self.fake_database['users']:
-            return self.fake_database['users'][user]
+        if email in self.fake_database['users']:
+            return self.fake_database['users'][email]
         return None
 
-    def set_session_id(self, user: str, session_id: bytes) -> bool:
+    def set_session_id(self, email: str, session_id: bytes) -> bool:
         self._check_connection()
-        if user in self.fake_database['users']:
-            self.fake_database['users'][user]['session_id'] = session_id
+        if email in self.fake_database['users']:
+            self.fake_database['users'][email]['session_id'] = session_id
             return True
         return False
 
-    def clear_session_id(self, user: str) -> bool:
+    def clear_session_id(self, email: str) -> bool:
         self._check_connection()
-        if user in self.fake_database['users']:
-            self.fake_database['users'][user]['session_id'] = None
+        if email in self.fake_database['users']:
+            self.fake_database['users'][email]['session_id'] = None
             return True
         return False
