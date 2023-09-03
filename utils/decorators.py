@@ -2,7 +2,7 @@ import functools
 
 from fastapi.responses import JSONResponse
 
-from utils.utils import hash_password
+from utils.helpers import hash_password
 
 
 def check_user_credentials(fn):

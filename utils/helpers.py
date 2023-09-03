@@ -3,6 +3,7 @@ import string
 
 import bcrypt
 
+
 SALT = bcrypt.gensalt()
 
 

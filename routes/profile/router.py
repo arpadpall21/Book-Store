@@ -1,9 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from server import database
-from utils.utils import generate_session_id, hash_password
+from utils.helpers import generate_session_id, hash_password
 from utils.decorators import check_user_credentials
 
 profile_router = APIRouter(prefix='/profile')
@@ -32,7 +32,7 @@ def register_account(body: RequestBody):
 @profile_router.post('/delete', responses={404: {'model': ResponseBody}, 401: {'model': ResponseBody}})
 @check_user_credentials
 def delete_account(body: RequestBody):
-    database.delete_account(body.username)
+    database.delete_user(body.username)
     return ResponseBody(success=True, message='account deleted')
 
 

@@ -1,20 +1,21 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from storage.database_adapter import DatabaseAdapter
-
-
-
-
-database = DatabaseAdapter()
-from routes.profile.router import profile_router
-from routes.storage.router import storage_router
-from routes.archive.router import archive_router
+from routes import init_routes
+from utils.logger import init_user_profile_activity_logger
 
 
 app = FastAPI()
+database = DatabaseAdapter()
+init_routes(app)
+init_user_profile_activity_logger(app)
 
 
+@app.on_event('startup')
+async def app_startup():
+    database.connect()
 
-app.include_router(profile_router)
-app.include_router(storage_router)
-app.include_router(archive_router)
+
+@app.on_event('shutdown')
+async def app_teardown():
+    database.connect()
