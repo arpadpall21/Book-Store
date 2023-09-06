@@ -22,7 +22,7 @@ def init_user_profile_activity_logger(app: FastAPI) -> None:
             # this ugly ugly code is a workaround for that
             body = json.loads(await get_body(request))
             response = await call_next(request)
-            if response.status_code < 300:
+            if response.status_code >= 200 and response.status_code < 300:
                 with open('./logs/user_profile_activity.log', 'a') as file:
                     file.write(_create_log_entry(body['email'], _get_activity(request.url)))
                 return response
@@ -31,7 +31,7 @@ def init_user_profile_activity_logger(app: FastAPI) -> None:
 
 
 def _create_log_entry(email: str, activity: str) -> str:
-    return f'[{_get_current_time_for_log_entry()}] [email: {email}] [activity: {activity}]\n'
+    return f'[{_get_log_entry_current_time()}] [email: {email}] [activity: {activity}]\n'
 
 
 def _get_activity(url: str) -> str:
@@ -47,6 +47,6 @@ def _get_activity(url: str) -> str:
         return 'unknown activity'
 
 
-def _get_current_time_for_log_entry() -> str:
+def _get_log_entry_current_time() -> str:
     current_time_str = str(datetime.now(timezone.utc))
     return current_time_str[:current_time_str.index('.')]
