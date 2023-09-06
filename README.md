@@ -40,7 +40,7 @@
                     - authentication router (for login / logout / get_info / update / delete)
         - websocket for monitoring
                     - live monitoring when the user reserves a book
-        - background task
+        *** background task
                     - email sending (simulate a 5 second delay for sending email)
         *** - setup and teardown
                 -> simulation of db connection connection/disconnection

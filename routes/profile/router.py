@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from server import database
 from utils.helpers import generate_session_id, hash_password
-from utils.decorators import check_user_credentials
+from utils.helpers import check_user_credentials
 from utils.email import send_welcome_email
 
 profile_router = APIRouter(prefix='/profile')

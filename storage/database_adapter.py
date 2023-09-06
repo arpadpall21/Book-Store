@@ -1,3 +1,6 @@
+from datetime import date
+
+
 class BaseDatabaseAdapter:
     def __init__(self):
         self.connected = False
@@ -51,3 +54,16 @@ class DatabaseAdapter(BaseDatabaseAdapter):
             self.fake_database['users'][email]['session_id'] = None
             return True
         return False
+
+    def add_book(self, title: str, author: str, released: date, rank: 1, archive=False) -> bool:
+        self._check_connection()
+        if archive:
+            if title in self.fake_database['archive']:
+                return False
+            self.fake_database['archive'][title] = {'author': author, 'released': released, 'rank': rank}
+            return True
+
+        if title in self.fake_database['storage']:
+            return False
+        self.fake_database['storage'][title] = {'author': author, 'released': released, 'rank': rank}
+        return True
