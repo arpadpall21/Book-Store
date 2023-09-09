@@ -1,6 +1,6 @@
 from typing import Union, List
 
-from storage.database_types import Book
+from storage.database_types import User, Book
 
 
 class BaseDatabaseAdapter:
@@ -23,37 +23,35 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         super().__init__()
         self.fake_database = {'users': {}, 'storage': {}, 'archive': {}}
 
-    def add_user(self, email: str, password: bytes) -> bool:
+    def add_user(self, user: User) -> bool:
         self._check_connection()
-        if email not in self.fake_database['users']:
-            self.fake_database['users'][email] = {'password': password, 'session_id': None}
-            return True
-        return False
+        if self.get_user(user.email):
+            return False
+        self.fake_database['users'][user.email] = user
+        return True
 
     def delete_user(self, email: str) -> bool:
         self._check_connection()
-        if email in self.fake_database['users']:
+        if self.get_user(email):
             del self.fake_database['users'][email]
             return True
         return False
 
-    def get_user(self, email: str) -> dict:
+    def get_user(self, email: str) -> User:
         self._check_connection()
-        if email in self.fake_database['users']:
-            return self.fake_database['users'][email]
-        return None
+        return self.fake_database['users'].get(email)
 
     def set_session_id(self, email: str, session_id: str) -> bool:
         self._check_connection()
-        if email in self.fake_database['users']:
-            self.fake_database['users'][email]['session_id'] = session_id
+        if user := self.get_user(email):
+            user.session_id = session_id
             return True
         return False
 
     def clear_session_id(self, email: str) -> bool:
         self._check_connection()
-        if email in self.fake_database['users']:
-            self.fake_database['users'][email]['session_id'] = None
+        if user := self.get_user(email):
+            user.session_id = None
             return True
         return False
 

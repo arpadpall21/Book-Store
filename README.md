@@ -4,7 +4,7 @@
 
       - 2 stores (books & old books)
       - for the sake of simplicity, no password check
-
+      - mention used python version
 
 
 
