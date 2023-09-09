@@ -8,8 +8,8 @@ from utils.helpers import hash_password
 def check_user_credentials(fn):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
-        from routes.profile.router import ResponseBody
         from server import database
+        from routes.profile.router import ResponseBody
 
         request = kwargs['body']
         stored_user = database.get_user(request.email)
@@ -24,8 +24,8 @@ def check_user_credentials(fn):
 def check_user_logged_in(fn):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
-        from routes.profile.router import ResponseBody
         from server import database
+        from routes.profile.router import ResponseBody
 
         request = kwargs['body']
         stored_user = database.get_user(request.email)
@@ -33,3 +33,13 @@ def check_user_logged_in(fn):
             return fn(*args, **kwargs)
         return JSONResponse(status_code=401, content=ResponseBody(success=False, message='not logged in').dict())
     return wrapper
+
+
+# def check_session_id(fn):
+#     @functools.wraps(fn)
+#     def wrapper(*args, **kwargs):
+#         from server import database
+
+#         request = kwargs['request']
+#         request.cookies.get('session_id')
+
