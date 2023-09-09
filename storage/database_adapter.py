@@ -1,4 +1,6 @@
-from datetime import date
+from typing import Union, List
+
+from storage.database_types import Book
 
 
 class BaseDatabaseAdapter:
@@ -21,7 +23,7 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         super().__init__()
         self.fake_database = {'users': {}, 'storage': {}, 'archive': {}}
 
-    def create_user(self, email: str, password: bytes) -> bool:
+    def add_user(self, email: str, password: bytes) -> bool:
         self._check_connection()
         if email not in self.fake_database['users']:
             self.fake_database['users'][email] = {'password': password, 'session_id': None}
@@ -35,13 +37,13 @@ class DatabaseAdapter(BaseDatabaseAdapter):
             return True
         return False
 
-    def get_user(self, email: str) -> dict | None:
+    def get_user(self, email: str) -> dict:
         self._check_connection()
         if email in self.fake_database['users']:
             return self.fake_database['users'][email]
         return None
 
-    def set_session_id(self, email: str, session_id: bytes) -> bool:
+    def set_session_id(self, email: str, session_id: str) -> bool:
         self._check_connection()
         if email in self.fake_database['users']:
             self.fake_database['users'][email]['session_id'] = session_id
@@ -55,15 +57,25 @@ class DatabaseAdapter(BaseDatabaseAdapter):
             return True
         return False
 
-    def add_book(self, title: str, author: str, released: date, rank: 1, archive=False) -> bool:
+    def add_book(self, book: Union[Book, List[Book]], archive: bool = False) -> bool:
         self._check_connection()
-        if archive:
-            if title in self.fake_database['archive']:
-                return False
-            self.fake_database['archive'][title] = {'author': author, 'released': released, 'rank': rank}
+        storage_type = 'archive' if archive else 'storage'
+        if isinstance(book, list):
+            for b in book:
+                self.fake_database[storage_type][b.title] = b
             return True
-
-        if title in self.fake_database['storage']:
-            return False
-        self.fake_database['storage'][title] = {'author': author, 'released': released, 'rank': rank}
+        self.fake_database[storage_type][book.title] = book
         return True
+
+    def get_book(self, title: str, archive: bool = False) -> Book:
+        self._check_connection()
+        storage_type = 'archive' if archive else 'storage'
+        return self.fake_database[storage_type].get(title)
+
+    def delete_book(self, title: str, archive: bool = False) -> bool:
+        self._check_connection()
+        storage_type = 'archive' if archive else 'storage'
+        if self.fake_database[storage_type].get(title):
+            del self.fake_database[storage_type][title]
+            return True
+        return False

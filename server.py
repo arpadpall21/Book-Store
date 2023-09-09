@@ -16,7 +16,6 @@ init_user_profile_activity_logger(app)
 async def app_startup():
     database.connect()
     fill_db_with_fake_books(database)
-    print(database.fake_database)
 
 
 @app.on_event('shutdown')

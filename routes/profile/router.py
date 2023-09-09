@@ -26,7 +26,7 @@ def register_account(body: RequestBody, background_tasks: BackgroundTasks):
     if user:
         return JSONResponse(status_code=409,
                             content=ResponseBody(success=False, message='user already exist').dict())
-    database.create_user(body.email, hash_password(body.password))
+    database.add_user(body.email, hash_password(body.password))
     background_tasks.add_task(send_welcome_email, body.email)
     return JSONResponse(status_code=201, content=ResponseBody(success=True, message='user created').dict())
 

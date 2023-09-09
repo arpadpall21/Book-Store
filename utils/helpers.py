@@ -2,10 +2,13 @@ import functools
 import random
 import string
 import json
-from datetime import datetime
+from datetime import date
 
 import bcrypt
 from fastapi.responses import JSONResponse
+
+from storage.database_types import Book
+from storage.database_adapter import DatabaseAdapter
 
 SALT = bcrypt.gensalt()
 
@@ -35,21 +38,18 @@ def check_user_credentials(fn):
     return wrapper
 
 
-def fill_db_with_fake_books(database):
+def fill_db_with_fake_books(database: DatabaseAdapter) -> None:
     STORAGE = 250
     ARCHIVE = 50
-    raw_fake_data = json.load(open('.data/fake_data.json', 'r'))
+    raw_data = json.load(open('.data/fake_data.json', 'r'))
 
-    for _ in range(STORAGE):
-        database.add_book(*_generate_fake_book(raw_fake_data))
-    for _ in range(ARCHIVE):
-        database.add_book(*_generate_fake_book(raw_fake_data), archive=True)
+    database.add_book([_generate_fake_book(raw_data) for _ in range(STORAGE)])
+    database.add_book([_generate_fake_book(raw_data) for _ in range(ARCHIVE)], archive=True)
 
 
-def _generate_fake_book(data: dict) -> tuple:
+def _generate_fake_book(data: dict) -> Book:
     artistic_words, names = data['artistic words'], data['names']
-
-    return (f'{random.choice(artistic_words)} {random.choice(artistic_words)}',
-            f'{random.choice(names)} {random.choice(names)}',
-            datetime(random.randint(1950, 2022), random.randint(1, 12), random.randint(1, 28)),
-            random.randint(1, 5))
+    return Book(title=f'{random.choice(artistic_words)} {random.choice(artistic_words)}',
+                author=f'{random.choice(names)} {random.choice(names)}',
+                release_date=date(random.randint(1950, 2022), random.randint(1, 12), random.randint(1, 28)),
+                rank=random.randint(1, 5))
