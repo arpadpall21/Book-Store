@@ -30,7 +30,7 @@ def init_user_profile_activity_logger(app: FastAPI) -> None:
 
 
 def log_user_activity(email: str, activity: str) -> None:
-    with open('./log/user_profile.log', 'a') as file:
+    with open('./log/user.log', 'a') as file:
         file.write(f'[{_get_current_log_time()}] [email: {email}] [activity: {activity}]\n')
 
 
