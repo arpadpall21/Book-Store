@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from server import database
 from utils.helpers import generate_session_id, hash_password
 from utils.helpers import check_user_credentials
-from utils.email import send_welcome_email
+from utils.email import send_welcome_email, send_farewell_email
 
 profile_router = APIRouter(prefix='/profile')
 
@@ -33,8 +33,9 @@ def register_account(body: RequestBody, background_tasks: BackgroundTasks):
 
 @profile_router.post('/delete', responses={404: {'model': ResponseBody}, 401: {'model': ResponseBody}})
 @check_user_credentials
-def delete_account(body: RequestBody):
+def delete_account(body: RequestBody, background_tasks: BackgroundTasks):
     database.delete_user(body.email)
+    background_tasks.add_task(send_farewell_email, body.email)
     return ResponseBody(success=True, message='account deleted')
 
 
@@ -43,7 +44,8 @@ def delete_account(body: RequestBody):
 def login(body: RequestBody):
     user = database.get_user(body.email)
     if user['session_id']:
-        return JSONResponse(status_code=401, content=ResponseBody(success=False, message='user already logged in').dict())
+        return JSONResponse(status_code=401, content=ResponseBody(success=False,
+                            message='user already logged in').dict())
 
     session_id = generate_session_id()
     database.set_session_id(body.email, session_id)

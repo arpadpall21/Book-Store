@@ -16,25 +16,30 @@ def init_user_profile_activity_logger(app: FastAPI) -> None:
         return body
 
     @app.middleware('http')
-    async def log_user_activity(request: Request, call_next):
+    async def log_user_profile_activity(request: Request, call_next):
         if request.url.path.startswith('/profile'):
             # fastAPI middlewares are buggy, we cannot read the request body with [async request.json()]
-            # this ugly ugly code is a workaround for that
+            # this ugly code is a workaround for that
             body = json.loads(await get_body(request))
             response = await call_next(request)
             if response.status_code >= 200 and response.status_code < 300:
-                with open('./logs/user_profile_activity.log', 'a') as file:
-                    file.write(_create_log_entry(body['email'], _get_activity(request.url)))
+                log_user_activity(body['email'], _get_user_activity(request.url))
                 return response
 
         return await call_next(request)
 
 
-def _create_log_entry(email: str, activity: str) -> str:
-    return f'[{_get_log_entry_current_time()}] [email: {email}] [activity: {activity}]\n'
+def log_user_activity(email: str, activity: str) -> None:
+    with open('./log/user_profile.log', 'a') as file:
+        file.write(f'[{_get_current_log_time()}] [email: {email}] [activity: {activity}]\n')
 
 
-def _get_activity(url: str) -> str:
+def log_email_activity(email: str, activity: str) -> None:
+    with open('./log/email.log', 'a') as file:
+        file.write(f'[{_get_current_log_time()}] [email: {email}] [activity: {activity}]\n')
+
+
+def _get_user_activity(url: str) -> str:
     if url.path == '/profile/register':
         return 'register new profile'
     elif url.path == '/profile/delete':
@@ -47,6 +52,6 @@ def _get_activity(url: str) -> str:
         return 'unknown activity'
 
 
-def _get_log_entry_current_time() -> str:
+def _get_current_log_time() -> str:
     current_time_str = str(datetime.now(timezone.utc))
     return current_time_str[:current_time_str.index('.')]

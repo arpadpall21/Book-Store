@@ -38,16 +38,16 @@ def check_user_credentials(fn):
 def fill_db_with_fake_books(database):
     STORAGE = 250
     ARCHIVE = 50
+    raw_fake_data = json.load(open('.data/fake_data.json', 'r'))
 
     for _ in range(STORAGE):
-        database.add_book(*_generate_fake_book())
+        database.add_book(*_generate_fake_book(raw_fake_data))
     for _ in range(ARCHIVE):
-        database.add_book(*_generate_fake_book(), archive=True)
+        database.add_book(*_generate_fake_book(raw_fake_data), archive=True)
 
 
-def _generate_fake_book() -> tuple:
-    fake_data = json.load(open('.data/fake_data.json', 'r'))
-    artistic_words, names = fake_data['artistic words'], fake_data['names']
+def _generate_fake_book(data: dict) -> tuple:
+    artistic_words, names = data['artistic words'], data['names']
 
     return (f'{random.choice(artistic_words)} {random.choice(artistic_words)}',
             f'{random.choice(names)} {random.choice(names)}',
