@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from server import database
 from utils.helpers import generate_session_id, hash_password
-from utils.helpers import check_user_credentials
+from utils.route_guard import check_user_credentials, check_user_logged_in
 from utils.email import send_welcome_email, send_farewell_email
 from storage.database_types import User
 
@@ -31,6 +31,7 @@ def register_account(body: RequestBody, background_tasks: BackgroundTasks):
 
 @profile_router.post('/delete', responses={404: {'model': ResponseBody}, 401: {'model': ResponseBody}})
 @check_user_credentials
+@check_user_logged_in
 def delete_account(body: RequestBody, background_tasks: BackgroundTasks):
     database.delete_user(body.email)
     background_tasks.add_task(send_farewell_email, body.email)
@@ -42,8 +43,7 @@ def delete_account(body: RequestBody, background_tasks: BackgroundTasks):
 def login(body: RequestBody):
     user = database.get_user(body.email)
     if user.session_id:
-        return JSONResponse(status_code=401,
-                            content=ResponseBody(success=False, message='user already logged in').dict())
+        return JSONResponse(status_code=401, content=ResponseBody(success=False, message='already logged in').dict())
 
     session_id = generate_session_id()
     database.set_session_id(body.email, session_id)
@@ -55,6 +55,7 @@ def login(body: RequestBody):
 
 @profile_router.post('/logout', responses={404: {'model': ResponseBody}, 401: {'model': ResponseBody}})
 @check_user_credentials
+@check_user_logged_in
 def logout(body: RequestBody):
     database.clear_session_id(body.email)
     return JSONResponse(status_code=200, content=ResponseBody(success=True, message='logged out').dict())

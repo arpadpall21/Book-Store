@@ -30,6 +30,10 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         self.fake_database['users'][user.email] = user
         return True
 
+    def get_user(self, email: str) -> User:
+        self._check_connection()
+        return self.fake_database['users'].get(email)
+
     def delete_user(self, email: str) -> bool:
         self._check_connection()
         if self.get_user(email):
@@ -37,16 +41,16 @@ class DatabaseAdapter(BaseDatabaseAdapter):
             return True
         return False
 
-    def get_user(self, email: str) -> User:
-        self._check_connection()
-        return self.fake_database['users'].get(email)
-
     def set_session_id(self, email: str, session_id: str) -> bool:
         self._check_connection()
         if user := self.get_user(email):
             user.session_id = session_id
             return True
         return False
+
+    def get_session_id(self, email: str) -> str:
+        self._check_connection()
+        return self.get_user(email).session_id
 
     def clear_session_id(self, email: str) -> bool:
         self._check_connection()
