@@ -1,4 +1,5 @@
-from typing import Union, List
+from typing import Union, Optional, List
+import itertools
 
 from storage.database_types import User, Book
 from utils.database_guard import check_connection
@@ -32,10 +33,10 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         return True
 
     @check_connection
-    def get_user(self, email: str) -> User:
+    def get_user(self, email: str) -> Optional[User]:
         return self.fake_database['users'].get(email)
 
-    def get_user_by_session_id(self, session_id: str) -> User:
+    def get_user_email_by_session_id(self, session_id: str) -> Optional[User]:
         for user in self.fake_database['users'].values():
             if user.session_id == session_id:
                 return user
@@ -56,7 +57,7 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         return False
 
     @check_connection
-    def get_session_id(self, email: str) -> str:
+    def get_session_id(self, email: str) -> Optional[str]:
         if user := self.get_user(email):
             return user.session_id
         return None
@@ -79,9 +80,20 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         return True
 
     @check_connection
-    def get_book(self, title: str, archive: bool = False) -> Book:
+    def get_book(self, title: str, archive: bool = False) -> Optional[Book]:
         storage_type = 'archive' if archive else 'storage'
         return self.fake_database[storage_type].get(title)
+
+    @check_connection
+    def get_books(self, start: int = 0, end: int = None, archive: bool = False) -> list[Book]:
+        storage_type = 'archive' if archive else 'storage'
+        if start >= len(self.fake_database[storage_type]):
+            return []
+
+        result = []
+        for title, book in dict(itertools.islice(self.fake_database[storage_type].items(), start, end)).items():
+            result.append(book)
+        return result
 
     @check_connection
     def delete_book(self, title: str, archive: bool = False) -> bool:

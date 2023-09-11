@@ -14,4 +14,4 @@ class Book:
     title: str
     author: str
     release_date: date
-    rank: int
+    ranked: int
