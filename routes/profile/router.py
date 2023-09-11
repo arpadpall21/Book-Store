@@ -17,7 +17,7 @@ def register_account(body: ProfileRequest, background_tasks: BackgroundTasks):
     if database.add_user(User(email=body.email, password=hash_password(body.password))):
         background_tasks.add_task(send_welcome_email, body.email)
         return JSONResponse(status_code=201, content=StatusResponse(success=True, message='user created').dict())
-    return JSONResponse(status_code=409, content=StatusResponse(success=False, message='user already exist').dict())
+    return JSONResponse(status_code=409, content=StatusResponse(success=False, message='user already registered').dict())
 
 
 @profile_router.post('/delete', responses={200: {'model': StatusResponse},

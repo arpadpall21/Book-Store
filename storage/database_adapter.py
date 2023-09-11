@@ -39,7 +39,7 @@ class DatabaseAdapter(BaseDatabaseAdapter):
     def get_user_email_by_session_id(self, session_id: str) -> Optional[User]:
         for user in self.fake_database['users'].values():
             if user.session_id == session_id:
-                return user
+                return user.email
         return None
 
     @check_connection

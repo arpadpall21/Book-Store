@@ -20,4 +20,4 @@ async def app_startup():
 
 @app.on_event('shutdown')
 async def app_teardown():
-    database.connect()
+    database.disconnect()

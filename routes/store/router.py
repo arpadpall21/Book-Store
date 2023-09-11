@@ -1,6 +1,8 @@
 from typing import List, Dict
+from typing import Annotated
+from collections import namedtuple
 
-from fastapi import APIRouter, Request, BackgroundTasks
+from fastapi import APIRouter, Request, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
@@ -9,6 +11,7 @@ from storage.database_types import Book
 from utils.route_guard import check_session_id
 from server import database
 from utils.email import send_book_order_email
+from routes.dependency import get_book_dependency, get_books_dependency, order_book_dependency
 
 store_router = APIRouter(prefix='/store')
 
@@ -17,8 +20,8 @@ store_router = APIRouter(prefix='/store')
                                               404: {'model': Dict},
                                               401: {'model': StatusResponse}})
 @check_session_id
-def get_book(request: Request, title: str):
-    book = database.get_book(title.replace('_', ' '))
+def get_book(params: Annotated[namedtuple, Depends(get_book_dependency)]):
+    book = database.get_book(params.title.replace('_', ' '))
     if not book:
         return JSONResponse(status_code=404, content={})
     return JSONResponse(status_code=200, content=jsonable_encoder(book))
@@ -28,10 +31,10 @@ def get_book(request: Request, title: str):
                                        404: {'model': List},
                                        401: {'model': StatusResponse}})
 @check_session_id
-def get_books(request: Request, skip: int = 0, limit: int = None):
-    if limit:
-        limit = skip + limit
-    books = database.get_books(skip, limit)
+def get_books(params: Annotated[namedtuple, Depends(get_books_dependency)]):
+    books = database.get_books(params.skip,
+                               params.skip + params.limit if params.limit else None)
+
     if not books:
         return JSONResponse(status_code=404, content=[])
     return JSONResponse(status_code=200, content=jsonable_encoder([jsonable_encoder(book) for book in books]))
@@ -41,13 +44,13 @@ def get_books(request: Request, skip: int = 0, limit: int = None):
                                                     404: {'model': StatusResponse},
                                                     401: {'model': StatusResponse}})
 @check_session_id
-def order_book(request: Request, title: str, background_tasks: BackgroundTasks):
-    book = database.get_book(title.replace('_', ' '))
+def order_book(params: Annotated[namedtuple, Depends(order_book_dependency)]):
+    book = database.get_book(params.title.replace('_', ' '))
     if not book:
         return JSONResponse(status_code=404, content=StatusResponse(success=False, message='book not found').dict())
 
-    database.delete_book(title.replace('_', ' '))   # book ordered -> remove from storage
-    email = database.get_user_email_by_session_id(request.cookies.get('session_id'))
-    background_tasks.add_task(send_book_order_email, email)
+    database.delete_book(params.title.replace('_', ' '))   # book ordered -> remove from storage
+    email = database.get_user_email_by_session_id(params.request.cookies.get('sessionId'))
+    params.background_tasks.add_task(send_book_order_email, email)
     return JSONResponse(status_code=200,
                         content=StatusResponse(success=True, message=f'order placed for: {book.title}').dict())

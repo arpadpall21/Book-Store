@@ -6,8 +6,8 @@
       - for the sake of simplicity, no password check
       - mention used python version
       - metion if postman used the session cookie is hanled automatically
-
-
+      - I have not chosen the most optimal production solution, but the aim is to use the fastAPI features (like dependency injection usag is not optimal)
+      - get book white space must be replaced with _ ex: ....
 
   My shiny new FastAPI project!
       - implements:
@@ -15,9 +15,9 @@
                     - user login-update-delete-get_info  / logout / get / post / put / delete
         *** - validations and documentation (document that are available on /docs)
                     - pay attention on development
-        - has query string 
+        *** - has query string 
                     - when getting all books
-        - has path parameters
+        *** - has path parameters
                     - when getting a specific book
         *** - cookie (authentication)
                 -> get session cookie whe logged in (then this cookie must be sent with every resource request)
@@ -29,7 +29,7 @@
                     - when getting a book that is not exist
         - dependency injection
                     - use this to bridge books and old books
-        - decoder
+        *** - decoder
                     - store the book dates as python date (this guy will be used to decode that)
         *** - middleware
                 -> user actvity logger
