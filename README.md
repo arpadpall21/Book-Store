@@ -27,7 +27,7 @@
                     - when creating a new profile / getting a book that is not exist
         *** - raise http exception (won't do that)
                     - when getting a book that is not exist
-        - dependency injection
+        *** - dependency injection
                     - use this to bridge books and old books
         *** - decoder
                     - store the book dates as python date (this guy will be used to decode that)

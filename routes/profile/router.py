@@ -1,9 +1,9 @@
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import JSONResponse
 
 from server import database
 from utils.helpers import generate_session_id, hash_password
-from utils.route_guard import check_user_credentials, check_user_logged_in
+from utils.route_guard import check_user_credentials, check_session_id
 from utils.email import send_welcome_email, send_farewell_email
 from storage.database_types import User
 from routes.model import ProfileRequest, StatusResponse
@@ -18,17 +18,6 @@ def register_account(body: ProfileRequest, background_tasks: BackgroundTasks):
         background_tasks.add_task(send_welcome_email, body.email)
         return JSONResponse(status_code=201, content=StatusResponse(success=True, message='user created').dict())
     return JSONResponse(status_code=409, content=StatusResponse(success=False, message='user already registered').dict())
-
-
-@profile_router.post('/delete', responses={200: {'model': StatusResponse},
-                                           404: {'model': StatusResponse},
-                                           401: {'model': StatusResponse}})
-@check_user_credentials
-@check_user_logged_in
-def delete_account(body: ProfileRequest, background_tasks: BackgroundTasks):
-    database.delete_user(body.email)
-    background_tasks.add_task(send_farewell_email, body.email)
-    return StatusResponse(success=True, message='account deleted')
 
 
 @profile_router.post('/login', responses={200: {'model': StatusResponse},
@@ -48,13 +37,22 @@ def login(body: ProfileRequest):
     return response
 
 
-@profile_router.post('/logout', responses={200: {'model': StatusResponse},
-                                           404: {'model': StatusResponse},
-                                           401: {'model': StatusResponse}})
-@check_user_credentials
-@check_user_logged_in
-def logout(body: ProfileRequest):
+@profile_router.get('/logout', responses={200: {'model': StatusResponse},
+                                          404: {'model': StatusResponse},
+                                          401: {'model': StatusResponse}})
+@check_session_id
+def logout(request: Request, body: ProfileRequest):
     database.clear_session_id(body.email)
     response = JSONResponse(status_code=200, content=StatusResponse(success=True, message='logged out').dict())
     response.delete_cookie(key='sessionId')
     return response
+
+
+@profile_router.delete('/delete', responses={200: {'model': StatusResponse},
+                                             404: {'model': StatusResponse},
+                                             401: {'model': StatusResponse}})
+@check_session_id
+def delete_account(request: Request, body: ProfileRequest, background_tasks: BackgroundTasks):
+    database.delete_user(body.email)
+    background_tasks.add_task(send_farewell_email, body.email)
+    return StatusResponse(success=True, message='account deleted')
