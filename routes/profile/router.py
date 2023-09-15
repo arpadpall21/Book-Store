@@ -41,8 +41,10 @@ def login(body: ProfileRequest):
                                           404: {'model': StatusResponse},
                                           401: {'model': StatusResponse}})
 @check_session_id
-def logout(request: Request, body: ProfileRequest):
-    database.clear_session_id(body.email)
+def logout(request: Request):
+    user_email = database.get_user_email_from_session_id(request.cookies.get('sessionId'))
+    database.clear_session_id(user_email)
+
     response = JSONResponse(status_code=200, content=StatusResponse(success=True, message='logged out').dict())
     response.delete_cookie(key='sessionId')
     return response
@@ -52,7 +54,9 @@ def logout(request: Request, body: ProfileRequest):
                                              404: {'model': StatusResponse},
                                              401: {'model': StatusResponse}})
 @check_session_id
-def delete_account(request: Request, body: ProfileRequest, background_tasks: BackgroundTasks):
-    database.delete_user(body.email)
-    background_tasks.add_task(send_farewell_email, body.email)
+def delete_account(request: Request, background_tasks: BackgroundTasks):
+    user_email = database.get_user_email_from_session_id(request.cookies.get('sessionId'))
+    database.clear_session_id(user_email)
+    database.delete_user(user_email)
+    background_tasks.add_task(send_farewell_email, user_email)
     return StatusResponse(success=True, message='account deleted')

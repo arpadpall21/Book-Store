@@ -51,7 +51,7 @@ def order_book(params: Annotated[namedtuple, Depends(order_book_dependency)]):
         return JSONResponse(status_code=404, content=StatusResponse(success=False, message='book not found').dict())
 
     database.delete_book(params.title.replace('_', ' '), archive=True)   # book ordered -> remove from storage
-    email = database.get_user_from_session_id(params.request.cookies.get('sessionId'))
+    email = database.get_user_email_from_session_id(params.request.cookies.get('sessionId'))
     params.background_tasks.add_task(send_book_order_email, email)
     return JSONResponse(status_code=200,
                         content=StatusResponse(success=True, message=f'order placed for: {book.title}').dict())

@@ -29,8 +29,10 @@ def check_session_id(fn):
         from server import database
         from routes.model import StatusResponse
 
-        cookies = kwargs['request'].cookies if kwargs.get('request') else kwargs['params'].request.cookies
-        if not database.get_user_from_session_id(cookies.get('sessionId')):
+        session_id = (kwargs.get('request').cookies.get('sessionId')
+                      if kwargs.get('request')
+                      else kwargs.get('params').request.cookies.get('sessionId'))
+        if not database.get_user_email_from_session_id(session_id):
             return JSONResponse(status_code=401,
                                 content=StatusResponse(success=False, message='invalid session id').dict())
         return fn(*args, **kwargs)
