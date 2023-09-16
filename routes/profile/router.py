@@ -24,16 +24,15 @@ def register_account(body: ProfileRequest, background_tasks: BackgroundTasks):
                                           404: {'model': StatusResponse},
                                           401: {'model': StatusResponse}})
 @check_user_credentials
-def login(body: ProfileRequest):
-    user = database.get_user(body.email)
-    if user.session_id:
-        return JSONResponse(status_code=401, content=StatusResponse(success=False, message='already logged in').dict())
+def login(request: Request, body: ProfileRequest):
+    if database.get_user_email_from_session_id(request.cookies.get('sessionId')):
+        return JSONResponse(status_code=401, content=StatusResponse(success=False, message='user already logged in').dict())
 
-    session_id = generate_session_id()
-    database.set_session_id(body.email, session_id)
+    new_session_id = generate_session_id()
+    database.set_session_id(body.email, new_session_id)
 
-    response = JSONResponse(status_code=200, content=StatusResponse(success=True, message='logged in').dict())
-    response.set_cookie(key='sessionId', value=session_id)
+    response = JSONResponse(status_code=200, content=StatusResponse(success=True, message='user successfully logged in').dict())
+    response.set_cookie(key='sessionId', value=new_session_id)
     return response
 
 
@@ -45,7 +44,7 @@ def logout(request: Request):
     user_email = database.get_user_email_from_session_id(request.cookies.get('sessionId'))
     database.clear_session_id(user_email)
 
-    response = JSONResponse(status_code=200, content=StatusResponse(success=True, message='logged out').dict())
+    response = JSONResponse(status_code=200, content=StatusResponse(success=True, message='user successfully logged out').dict())
     response.delete_cookie(key='sessionId')
     return response
 

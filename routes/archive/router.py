@@ -2,7 +2,7 @@ from typing import List, Dict
 from typing import Annotated
 from collections import namedtuple
 
-from fastapi import APIRouter, Request, BackgroundTasks, Depends
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 

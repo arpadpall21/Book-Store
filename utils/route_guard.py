@@ -34,6 +34,6 @@ def check_session_id(fn):
                       else kwargs.get('params').request.cookies.get('sessionId'))
         if not database.get_user_email_from_session_id(session_id):
             return JSONResponse(status_code=401,
-                                content=StatusResponse(success=False, message='invalid session id').dict())
+                                content=StatusResponse(success=False, message='invalid session id (user not logged in)').dict())
         return fn(*args, **kwargs)
     return wrapper
