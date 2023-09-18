@@ -5,8 +5,8 @@ from datetime import date
 
 import bcrypt
 
-from storage.database_types import Book
-from storage.database_adapter import DatabaseAdapter
+from database.database_types import Book
+from database.database_adapter import DatabaseAdapter
 
 SALT = bcrypt.gensalt()
 

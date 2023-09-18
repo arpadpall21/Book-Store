@@ -1,7 +1,7 @@
 from typing import Union, Optional, List
 import itertools
 
-from storage.database_types import User, Book
+from database.database_types import User, Book
 from utils.database_guard import check_connection
 
 

@@ -46,3 +46,7 @@
         *** - setup and teardown
                 -> simulation of db connection connection/disconnection
                     - for db fake db simulation -> this will be great
+
+
+- administrator credentials (ws)
+- serveral administratos should receive order notification (broadcast message)

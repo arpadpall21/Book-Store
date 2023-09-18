@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 from routes.model import StatusResponse
-from storage.database_types import Book
+from database.database_types import Book
 from utils.route_guard import check_session_id
 from server import database
 from utils.email import send_book_order_email

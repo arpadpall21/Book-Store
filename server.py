@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from storage.database_adapter import DatabaseAdapter
+from database.database_adapter import DatabaseAdapter
 from routes import init_routes
 from utils.logger import init_user_profile_activity_logger
 from utils.helpers import fill_db_with_fake_books
