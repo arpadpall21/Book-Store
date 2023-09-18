@@ -5,7 +5,7 @@ from datetime import date
 
 import bcrypt
 
-from database.database_types import Book
+from utils.constants import Book, StorageType
 from database.database_adapter import DatabaseAdapter
 
 SALT = bcrypt.gensalt()
@@ -26,7 +26,7 @@ def fill_db_with_fake_books(database: DatabaseAdapter) -> None:
     raw_data = json.load(open('.data/fake_data.json', 'r'))
 
     database.add_book([_generate_fake_book(raw_data) for _ in range(STORAGE)])
-    database.add_book([_generate_fake_book(raw_data) for _ in range(ARCHIVE)], archive=True)
+    database.add_book([_generate_fake_book(raw_data) for _ in range(ARCHIVE)], StorageType.ARCHIVE)
 
 
 def _generate_fake_book(data: dict) -> Book:

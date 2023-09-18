@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, Request
 
 
+# fastAPI middlewares are buggy, we cannot read the request body with [async request.json()]
+# this ugly code is a workaround for that
 def init_user_profile_activity_logger(app: FastAPI) -> None:
     async def set_body(request: Request, body: bytes):
         async def receive():
@@ -18,8 +20,6 @@ def init_user_profile_activity_logger(app: FastAPI) -> None:
     @app.middleware('http')
     async def log_user_profile_activity(request: Request, call_next):
         if request.url.path.startswith('/profile'):
-            # fastAPI middlewares are buggy, we cannot read the request body with [async request.json()]
-            # this ugly code is a workaround for that
             body = json.loads(await get_body(request))
             response = await call_next(request)
             if response.status_code >= 200 and response.status_code < 300:

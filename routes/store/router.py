@@ -7,10 +7,10 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 from routes.model import StatusResponse
-from database.database_types import Book
+from utils.constants import Book, StorageType
 from utils.route_guard import check_session_id
-from server import database
 from utils.email import send_book_order_email
+from server import database
 from routes.dependency import get_book_dependency, get_books_dependency, order_book_dependency
 
 store_router = APIRouter(prefix='/store')
@@ -49,7 +49,9 @@ def order_book(params: Annotated[namedtuple, Depends(order_book_dependency)]):
     if not book:
         return JSONResponse(status_code=404, content=StatusResponse(success=False, message='book not found').dict())
 
-    database.delete_book(params.title.replace('_', ' '))   # book ordered -> remove from storage
+    database.add_book(book, StorageType.ORDER)
+    database.delete_book(book.title)
+
     email = database.get_user_email_from_session_id(params.request.cookies.get('sessionId'))
     params.background_tasks.add_task(send_book_order_email, email)
     return JSONResponse(status_code=200,

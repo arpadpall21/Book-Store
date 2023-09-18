@@ -5,7 +5,7 @@ from server import database
 from utils.helpers import generate_session_id, hash_password
 from utils.route_guard import check_user_credentials, check_session_id
 from utils.email import send_welcome_email, send_farewell_email
-from database.database_types import User
+from utils.constants import User
 from routes.model import ProfileRequest, StatusResponse
 
 profile_router = APIRouter(prefix='/profile')

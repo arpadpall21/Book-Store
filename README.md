@@ -50,3 +50,5 @@
 
 - administrator credentials (ws)
 - serveral administratos should receive order notification (broadcast message)
+
+- code duplication is unprofessional (but the main goal is here to use fastAPI features)

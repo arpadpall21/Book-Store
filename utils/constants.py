@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
 
 
 @dataclass
@@ -15,3 +16,9 @@ class Book:
     author: str
     release_date: date
     ranked: int
+
+
+class StorageType(Enum):
+    STORAGE = 'storage'
+    ARCHIVE = 'archive'
+    ORDER = 'order'

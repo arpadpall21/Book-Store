@@ -22,7 +22,7 @@ async def admin(ws: WebSocket):
             return
 
         while True:
-            ordered_book = await get_ordered_book()
+            # ordered_book = await get_ordered_book()
             await ws.send_json({'message': 'hello'})
 
             print(ws.client)

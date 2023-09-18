@@ -1,7 +1,7 @@
 from typing import Union, Optional, List
 import itertools
 
-from database.database_types import User, Book
+from utils.constants import User, Book, StorageType
 from utils.database_guard import check_connection
 
 
@@ -23,7 +23,7 @@ class BaseDatabaseAdapter:
 class DatabaseAdapter(BaseDatabaseAdapter):
     def __init__(self):
         super().__init__()
-        self.fake_database = {'users': {}, 'storage': {}, 'archive': {}}
+        self.fake_database = {'users': {}, 'storage': {}, 'archive': {}, 'order': {}}
 
     @check_connection
     def add_user(self, user: User) -> bool:
@@ -72,8 +72,8 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         return False
 
     @check_connection
-    def add_book(self, book: Union[Book, List[Book]], archive: bool = False) -> bool:
-        storage_type = 'archive' if archive else 'storage'
+    def add_book(self, book: Union[Book, List[Book]], storage_type: StorageType = False) -> bool:
+        storage_type = self._get_storage_type(storage_type)
         if isinstance(book, list):
             for b in book:
                 self.fake_database[storage_type][b.title] = b
@@ -82,13 +82,12 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         return True
 
     @check_connection
-    def get_book(self, title: str, archive: bool = False) -> Optional[Book]:
-        storage_type = 'archive' if archive else 'storage'
-        return self.fake_database[storage_type].get(title)
+    def get_book(self, title: str, storage_type: StorageType = False) -> Optional[Book]:
+        return self.fake_database[self._get_storage_type(storage_type)].get(title)
 
     @check_connection
-    def get_books(self, start: int = 0, end: int = None, archive: bool = False) -> list[Book]:
-        storage_type = 'archive' if archive else 'storage'
+    def get_books(self, start: int = 0, end: int = None, storage_type: StorageType = False) -> list[Book]:
+        storage_type = self._get_storage_type(storage_type)
         if start >= len(self.fake_database[storage_type]):
             return []
 
@@ -98,9 +97,16 @@ class DatabaseAdapter(BaseDatabaseAdapter):
         return result
 
     @check_connection
-    def delete_book(self, title: str, archive: bool = False) -> bool:
-        storage_type = 'archive' if archive else 'storage'
+    def delete_book(self, title: str, storage_type: StorageType = False) -> bool:
+        storage_type = self._get_storage_type(storage_type)
         if self.fake_database[storage_type].get(title):
             del self.fake_database[storage_type][title]
             return True
         return False
+
+    def _get_storage_type(self, storage_type: StorageType) -> str:
+        if storage_type == StorageType.ARCHIVE:
+            return 'archive'
+        if storage_type == StorageType.ORDER:
+            return 'order'
+        return 'storage'
