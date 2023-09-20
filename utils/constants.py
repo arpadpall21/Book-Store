@@ -21,4 +21,3 @@ class Book:
 class StorageType(Enum):
     STORAGE = 'storage'
     ARCHIVE = 'archive'
-    ORDER = 'order'

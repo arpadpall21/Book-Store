@@ -2,15 +2,17 @@ import asyncio
 import websockets
 import json
 
-credentials = {
-    'user': 'admin_',
-    'password': 'admin_',
-}
+USER = 'admin'
+PASSWORD = 'admin'
 
 
 async def ws_client():
     async with websockets.connect('ws://localhost:3000/ws/admin') as websocket:
-        await websocket.send(json.dumps(credentials))
+        await websocket.send(json.dumps({
+            'user': USER,
+            'password': PASSWORD,
+        }))
+
         while True:
             print(await websocket.recv())
 

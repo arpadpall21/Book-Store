@@ -23,7 +23,7 @@ class BaseDatabaseAdapter:
 class DatabaseAdapter(BaseDatabaseAdapter):
     def __init__(self):
         super().__init__()
-        self.fake_database = {'users': {}, 'storage': {}, 'archive': {}, 'order': {}}
+        self.fake_database = {'users': {}, 'storage': {}, 'archive': {}}
 
     @check_connection
     def add_user(self, user: User) -> bool:
@@ -107,6 +107,4 @@ class DatabaseAdapter(BaseDatabaseAdapter):
     def _get_storage_type(self, storage_type: StorageType) -> str:
         if storage_type == StorageType.ARCHIVE:
             return 'archive'
-        if storage_type == StorageType.ORDER:
-            return 'order'
         return 'storage'

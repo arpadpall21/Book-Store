@@ -20,4 +20,7 @@ async def app_startup():
 
 @app.on_event('shutdown')
 async def app_teardown():
+    from routes.ws.router import admin_connection_manager
+
     database.disconnect()
+    await admin_connection_manager.disconnect_all_clients()

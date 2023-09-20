@@ -33,5 +33,5 @@ def _generate_fake_book(data: dict) -> Book:
     artistic_words, names = data['artistic words'], data['names']
     return Book(title=f'{random.choice(artistic_words)} {random.choice(artistic_words)}',
                 author=f'{random.choice(names)} {random.choice(names)}',
-                release_date=date(random.randint(1950, 2022), random.randint(1, 12), random.randint(1, 28)),
+                release_date=date(random.randint(1980, 2022), random.randint(1, 12), random.randint(1, 28)),
                 ranked=random.randint(1, 5))
