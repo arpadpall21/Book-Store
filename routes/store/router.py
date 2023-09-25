@@ -48,7 +48,8 @@ def get_books(params: Annotated[namedtuple, Depends(get_books_dependency)]):
 def order_book(params: Annotated[namedtuple, Depends(order_book_dependency)]):
     book = database.get_book(params.title.replace('_', ' '))
     if not book:
-        return JSONResponse(status_code=404, content=StatusResponse(success=False, message='book not found').dict())
+        return JSONResponse(status_code=404,
+                            content=StatusResponse(success=False, message='book not found').model_dump())
 
     database.delete_book(book.title)
     email = database.get_user_email_from_session_id(params.request.cookies.get('sessionId'))
@@ -56,4 +57,4 @@ def order_book(params: Annotated[namedtuple, Depends(order_book_dependency)]):
     params.background_tasks.add_task(admin_connection_manager.broadcast_book_order_to_admins, book)
 
     return JSONResponse(status_code=200,
-                        content=StatusResponse(success=True, message=f'order placed for: {book.title}').dict())
+                        content=StatusResponse(success=True, message=f'order placed for: {book.title}').model_dump())

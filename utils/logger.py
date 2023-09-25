@@ -7,6 +7,8 @@ from fastapi import FastAPI, Request
 # fastAPI middlewares are buggy, we cannot read the request body with [async request.json()]
 # this ugly code is a workaround for that
 def init_user_profile_activity_logger(app: FastAPI) -> None:
+    from server import database
+
     async def set_body(request: Request, body: bytes):
         async def receive():
             return {"type": "http.request", "body": body}
@@ -20,10 +22,17 @@ def init_user_profile_activity_logger(app: FastAPI) -> None:
     @app.middleware('http')
     async def log_user_profile_activity(request: Request, call_next):
         if request.url.path.startswith('/profile'):
-            body = json.loads(await get_body(request))
+            user_email = None
+            if request.method == 'POST':
+                body = json.loads(await get_body(request))
+                user_email = body.get('email')
+            else:
+                session_id = request.cookies.get('sessionId')
+                user_email = database.get_user_email_from_session_id(session_id)
+
             response = await call_next(request)
             if response.status_code >= 200 and response.status_code < 300:
-                log_user_activity(body['email'], _get_user_activity(request.url))
+                log_user_activity(user_email, _get_user_activity(request.url))
                 return response
 
         return await call_next(request)

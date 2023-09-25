@@ -15,10 +15,10 @@ def check_user_credentials(fn):
         stored_user = database.get_user(request.email)
         if not stored_user:
             return JSONResponse(status_code=404,
-                                content=StatusResponse(success=False, message='user not found').dict())
+                                content=StatusResponse(success=False, message='user not found').model_dump())
         if stored_user.password != hash_password(request.password):
             return JSONResponse(status_code=401,
-                                content=StatusResponse(success=False, message='wrong password').dict())
+                                content=StatusResponse(success=False, message='wrong password').model_dump())
         return fn(*args, **kwargs)
     return wrapper
 
@@ -34,6 +34,7 @@ def check_session_id(fn):
                       else kwargs.get('params').request.cookies.get('sessionId'))
         if not database.get_user_email_from_session_id(session_id):
             return JSONResponse(status_code=401,
-                                content=StatusResponse(success=False, message='invalid session id (user not logged in)').dict())
+                                content=StatusResponse(success=False,
+                                                       message='invalid session id (user not logged in)').model_dump())
         return fn(*args, **kwargs)
     return wrapper

@@ -52,3 +52,8 @@
 - serveral administratos should receive order notification (broadcast message)
 
 - code duplication is unprofessional (but the main goal is here to use fastAPI features)
+
+- running test (one example)
+
+- added profile test ()
+- to run tests python -m pytest
